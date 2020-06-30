@@ -19,9 +19,10 @@ module.exports.create = function (req, res, next) {
 };
 
 module.exports.request = function (req, res, next) {
+  console.log(`Request req.body.user: ${req.body.user}`);
   Instance.findByIdAndUpdate(
     { _id: req.params.instanceId },
-    { requested_by: req.body.user },
+    { $push: { requested_by: req.body.user } },
     function (err, instance) {
       if (err) {
         return res.status(500).json('Error with book request');
@@ -32,12 +33,13 @@ module.exports.request = function (req, res, next) {
 };
 
 module.exports.accept_request = function (req, res, next) {
+  console.log(`Accept req.body.user: ${req.body.acceptedUser}`);
   Instance.findByIdAndUpdate(
-    { _id: req.params.instanceId },
+    { _id: req.params.instanceId, user: req.body.acceptedUser },
     {
-      requested_by: null,
-      borrowed_by: req.body.requested_by,
-      return_by: req.body.return_by,
+      $pull: { requested_by: req.body.acceptedUser },
+      borrowed_by: req.body.acceptedUser,
+      // return_by: req.body.return_by,
     },
     function (err, instance) {
       if (err) {
@@ -52,7 +54,7 @@ module.exports.deny_request = function (req, res, next) {
   Instance.findByIdAndUpdate(
     { _id: req.params.instanceId },
     {
-      requested_by: null,
+      $pull: { requested_by: req.body.deniedUser },
     },
     function (err, instance) {
       if (err) {

@@ -44,71 +44,71 @@ const book_details = {
   cover: 'some url or some"in like that',
 };
 
-// describe('Create, Login, Check Token', () => {
-//   after((done) => {
-//     User.findOneAndRemove({ email: 'test@email.com' }, (err, res) => {
-//       console.log(err);
-//       console.log(res);
-//     });
+describe('Create, Login, Check Token', () => {
+  after((done) => {
+    User.findOneAndRemove({ email: 'test@email.com' }, (err, res) => {
+      console.log(err);
+      console.log(res);
+    });
 
-//     done();
-//   });
+    done();
+  });
 
-//   it('Register -> Login -> Access Protected Route', (done) => {
-//     chai
-//       .request(server)
-//       .post('/auth/register')
-//       .send(user_one_register)
-//       .end((err, res) => {
-//         if (err) {
-//           return console.log(err);
-//         }
-//         res.should.have.status(201);
-//         expect(res.body.auth).to.be.true;
-//         done();
-//       });
+  it('Register -> Login -> Access Protected Route', (done) => {
+    chai
+      .request(server)
+      .post('/auth/register')
+      .send(user_one_register)
+      .end((err, res) => {
+        if (err) {
+          return console.log(err);
+        }
+        res.should.have.status(201);
+        expect(res.body.auth).to.be.true;
+        done();
+      });
 
-//     it('should log user in', (done) => {
-//       chai
-//         .request(server)
-//         .post('/auth/login')
-//         .send(user_one_login)
-//         .end((err, res) => {
-//           if (err) {
-//             return console.log(err);
-//           }
-//           res.should.have.status(200);
-//           expect(res.body.auth).to.be.true;
-//           res.body.should.have.property('token');
+    it('should log user in', (done) => {
+      chai
+        .request(server)
+        .post('/auth/login')
+        .send(user_one_login)
+        .end((err, res) => {
+          if (err) {
+            return console.log(err);
+          }
+          res.should.have.status(200);
+          expect(res.body.auth).to.be.true;
+          res.body.should.have.property('token');
 
-//           token = res.body.token;
-//           done();
-//         });
-//       chai
-//         .request(server)
-//         .get('/users/dashboard')
-//         .set('authorization', token)
-//         .end((err, res) => {
-//           if (err) {
-//             return console.log(err);
-//           }
-//           res.should.have.status(200);
-//           expect(res.body.auth).to.be.true;
-//         });
-//     });
-//   });
-// });
+          token = res.body.token;
+          done();
+        });
+      chai
+        .request(server)
+        .get('/users/dashboard')
+        .set('authorization', token)
+        .end((err, res) => {
+          if (err) {
+            return console.log(err);
+          }
+          res.should.have.status(200);
+          expect(res.body.auth).to.be.true;
+        });
+    });
+  });
+});
 
 // describe('Log in user, create book, then create instance of that book', () => {
-// after((done) => {
-//   Book.remove({}, (err) => {
-//     console.log(err);
-//   });
-//   Instance.remove({}, (err) => {
-//     console.log(err);
-//   });
-//   done();
-// });
+//   // after((done) => {
+//   //   Book.remove({}, (err) => {
+//   //     console.log(err);
+//   //   });
+//   //   Instance.remove({}, (err) => {
+//   //     console.log(err);
+//   //   });
+//   //   done();
+//   // });
 
 //   it('Login -> Create Book -> Create User', (done) => {
 //     chai
@@ -156,7 +156,7 @@ const book_details = {
 //   });
 // });
 
-const instance = '5efa6a9b9daf051ad4247e61';
+const instance = '5efaa78bc653dc4f70064089';
 
 describe('Request to borrow a book, accept request', () => {
   it('Request book', (done) => {
@@ -174,15 +174,27 @@ describe('Request to borrow a book, accept request', () => {
         const token = res.body.token;
         chai
           .request(server)
-          .post(`instances/5efa6a9b9daf051ad4247e61/request`)
+          .put('/instances/5efaa78bc653dc4f70064089/request')
           .set('authorization', token)
           .send({ user: user })
           .end((err, res) => {
             if (err) {
               console.log(err);
             }
-            res.should.have.status(201);
-            done();
+            res.should.have.status(200);
+
+            chai
+              .request(server)
+              .put('/instances/5efaa78bc653dc4f70064089/accept')
+              .set('authorization', token)
+              .send({ acceptedUser: user })
+              .end((err, res) => {
+                if (err) {
+                  console.log(err);
+                }
+                res.should.have.status(200);
+                done();
+              });
           });
       });
   });

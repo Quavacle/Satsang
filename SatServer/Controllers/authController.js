@@ -76,7 +76,7 @@ exports.authenticate = function (req, res, next) {
   if (token) {
     jwt.verify(token, privateKey, (err, decoded) => {
       if (err) {
-        return res.json('Token invalid');
+        return res.status(401).json('Token invalid');
       } else {
         req.decoded = decoded;
         next();
@@ -84,5 +84,28 @@ exports.authenticate = function (req, res, next) {
     });
   } else {
     res.json('Token not provided');
+  }
+};
+
+exports.user_check = function (req, res, next) {
+  let token = req.headers['x-access-token'] || req.headers['authorization'];
+
+  if (token.startsWith('Bearer ')) {
+    token = token.slice(7, token.length);
+  }
+
+  if (token) {
+    jwt.verify(token, privateKey, (err, decoded) => {
+      if (err) {
+        return res.status(401).json('Token invalid');
+      } else {
+        req.decoded = decoded;
+        if (decoded.user._id === req.body.user._id) {
+          next();
+        } else {
+          res.status(401).json('Incorrect user');
+        }
+      }
+    });
   }
 };

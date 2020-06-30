@@ -4,8 +4,8 @@ var instanceController = require('../Controllers/instanceController');
 const authController = require('../Controllers/authController');
 
 router.post('/create', authController.authenticate, instanceController.create);
-router.post('/:instanceId/request', instanceController.request);
-router.post('/:instanceId/accept', instanceController.accept_request);
-router.post('/:instanceId/deny', instanceController.deny_request);
+router.put('/:instanceId/request', instanceController.request);
+router.put('/:instanceId/accept', instanceController.accept_request);
+router.put('/:instanceId/deny', instanceController.deny_request);
 
 module.exports = router;
