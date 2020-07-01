@@ -59,7 +59,7 @@ describe('Create, Login, Check Token', () => {
   it('Register -> Login -> Access Protected Route', (done) => {
     chai
       .request(server)
-      .post('/auth/register')
+      .post('/register')
       .send(user_one_register)
       .end((err, res) => {
         if (err) {
@@ -73,7 +73,7 @@ describe('Create, Login, Check Token', () => {
     it('should log user in', (done) => {
       chai
         .request(server)
-        .post('/auth/login')
+        .post('/login')
         .send(user_one_login)
         .end((err, res) => {
           if (err) {
@@ -116,7 +116,7 @@ describe('Log in user, create book, then create instance of that book', () => {
   it('Login (User two) -> Create Book -> Create User', (done) => {
     chai
       .request(server)
-      .post('/auth/login')
+      .post('/login')
       .send(foibles)
       .end((err, res) => {
         if (err) {
@@ -165,7 +165,7 @@ describe('Login (user 2) -> Request to borrow a book', () => {
   it('Request book', (done) => {
     chai
       .request(server)
-      .post('/auth/login')
+      .post('/login')
       .send(kokomo)
       .end((err, res) => {
         if (err) {
@@ -188,58 +188,58 @@ describe('Login (user 2) -> Request to borrow a book', () => {
   });
 });
 
-// describe('Login non-owner -> Attempt to accept -> Fail', () => {
-//   it('Fail to accept request (invalid user)', (done) => {
-//     chai
-//       .request(server)
-//       .post('/auth/login')
-//       .send(kokomo)
-//       .end((err, res) => {
-//         if (err) {
-//           console.log(err);
-//         }
-//         res.should.have.status(200);
-//         const token = res.body.token;
-//         chai
-//           .request(server)
-//           .put('/instances/' + instance + '/accept')
-//           .set('authorization', token)
-//           .send({ acceptedUser: kokomo._id })
-//           .end((err, res) => {
-//             if (err) {
-//               console.log(err);
-//             }
-//             res.should.have.status(401);
-//             done();
-//           });
-//       });
-//   });
-// });
+describe('Login non-owner -> Attempt to accept -> Fail', () => {
+  it('Fail to accept request (invalid user)', (done) => {
+    chai
+      .request(server)
+      .post('/login')
+      .send(foibles)
+      .end((err, res) => {
+        if (err) {
+          console.log(err);
+        }
+        res.should.have.status(200);
+        const token = res.body.token;
+        chai
+          .request(server)
+          .put('/instances/' + instance + '/accept')
+          .set('authorization', token)
+          .send({ acceptedUser: kokomo._id })
+          .end((err, res) => {
+            if (err) {
+              console.log(err);
+            }
+            res.should.have.status(401);
+            done();
+          });
+      });
+  });
+});
 
-// describe('Login (user 3) -> Accept request to borrow book', () => {
-//   it('Accept request', (done) => {
-//     chai
-//       .request(server)
-//       .post('/auth/login')
-//       .send(kokomo)
-//       .end((err, res) => {
-//         if (err) {
-//           console.log(err);
-//         }
-//         res.should.have.status(200);
-//         const token = res.body.token;
-//         chai
-//           .request(server)
-//           .put('/instances/' + instance + '/accept')
-//           .set('authorization', token)
-//           .send({ acceptedUser: foibles._id })
-//           .end((err, res) => {
-//             if (err) {
-//               console.log(err);
-//             }
-//             res.should.have.status(200);
-//             done();
-//           });
-//       });
-//   });
-// });
+describe('Login (user 3) -> Accept request to borrow book', () => {
+  it('Accept request', (done) => {
+    chai
+      .request(server)
+      .post('/login')
+      .send(kokomo)
+      .end((err, res) => {
+        if (err) {
+          console.log(err);
+        }
+        res.should.have.status(200);
+        const token = res.body.token;
+        chai
+          .request(server)
+          .put('/instances/' + instance + '/accept')
+          .set('authorization', token)
+          .send({ acceptedUser: foibles._id })
+          .end((err, res) => {
+            if (err) {
+              console.log(err);
+            }
+            res.should.have.status(200);
+            done();
+          });
+      });
+  });
+});

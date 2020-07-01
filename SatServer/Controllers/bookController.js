@@ -1,6 +1,6 @@
 const Book = require('../Models/bookModel');
 
-exports.create = function (req, res, next) {
+exports.create = function (req, res) {
   Book.create(
     {
       title: req.body.title,
@@ -18,4 +18,13 @@ exports.create = function (req, res, next) {
       res.status(201).json(book);
     }
   );
+};
+
+exports.index = function (req, res) {
+  Book.find({}, function (err, books) {
+    if (err) {
+      return res.status(500).json('Issue getting books');
+    }
+    res.status(200).json(books);
+  });
 };

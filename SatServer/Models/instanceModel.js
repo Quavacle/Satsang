@@ -10,6 +10,7 @@ const InstanceSchema = new Schema(
     rating: { type: Number, min: 0, max: 5 },
     borrowed_by: { type: Schema.Types.ObjectId, ref: 'User' },
     requested_by: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    pending_return: { type: Boolean, default: false },
     return_by: { type: Date },
   },
   { timestamps: true }

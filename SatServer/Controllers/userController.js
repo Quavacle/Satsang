@@ -1,49 +1,71 @@
 const User = require('../Models/userModel');
 const Instance = require('../Models/instanceModel');
+const async = require('async');
 
+// Main dashboard get, returning user info, books owned, borrowed, and requested
 module.exports.dashboard = function (req, res) {
-  User.findById({ _id: req.decoded._id }, { password: 0, _id: 0 }, function (
-    err,
-    user
-  ) {
-    if (err) {
-      res.status(500).json('Error pulling user information');
-    }
-    // res.status(200).json(user);
-  });
+  async.parallel(
+    {
+      user: function (callback) {
+        User.findById({ _id: req.decoded._id }, { password: 0 }).exec(callback);
+      },
 
-  Instance.find({
-    $or: [
-      { user: req.decoded._id },
-      { borrowed_by: req.decoded._id },
-      { requested_by: req.decoded._id },
-    ],
-  })
-    .populate('book')
-    .exec(function (err, instances) {
+      owned: function (callback) {
+        Instance.find({
+          user: req.decoded._id,
+        })
+          .populate('book')
+          .populate('user', { password: 0 })
+          .exec(callback);
+      },
+
+      borrowed: function (callback) {
+        Instance.find({
+          borrowed_by: req.decoded._id,
+        })
+          .populate('book')
+          .exec(callback);
+      },
+
+      requested: function (callback) {
+        Instance.find({
+          requested_by: req.decoded._id,
+        })
+          .populate('book')
+          .exec(callback);
+      },
+    },
+    function (err, results) {
       if (err) {
-        return next(err);
+        res.status(500).json('Error getting dashboard information');
       }
-      const seperatedInstances = splitInstances(instances, req.decoded._id);
-      res.status(200).json({ instances: seperatedInstances });
-    });
+      res.status(200).json({ results });
+    }
+  );
 };
 
-function splitInstances(instances, userId) {
-  const owned = {};
-  const borrowed = {};
-  const requested = {};
-  let i = 0;
+module.exports.profile = function (req, res) {
+  async.waterfall(
+    [
+      function (callback) {
+        User.findOne({ username: req.params.username }, { password: 0 }).exec(
+          callback(null, user)
+        );
+      },
 
-  while (i < instances.length) {
-    if (instances[i].user == userId) {
-      owned[i] = instances[i];
-    } else if (instances[i].borrowed_by == userId) {
-      borrowed[i] = instance[i];
-    } else if (instances[i].requested_by == userId) {
-      requested[i] = instance[i];
+      function (user, callback) {
+        Instance.find({
+          user: user,
+        }).exec(null, callback);
+      },
+    ],
+    function (err, results) {
+      if (err) {
+        res
+          .status(500)
+          .json('Error finding profile for ' + req.params.username);
+      }
+      res.status(200).json({ results });
     }
-    i++;
-  }
-  return { owned: owned, borrowed: borrowed, requested: requested };
-}
+  );
+};

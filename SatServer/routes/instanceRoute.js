@@ -3,7 +3,7 @@ var router = express.Router();
 var instanceController = require('../Controllers/instanceController');
 const authController = require('../Controllers/authController');
 
-router.get('/list', instanceController.index);
+router.get('/', instanceController.index);
 router.post('/create', authController.authenticate, instanceController.create);
 router.put(
   '/:instanceId/request',
@@ -19,6 +19,16 @@ router.put(
   '/:instanceId/deny',
   authController.authenticate,
   instanceController.deny_request
+);
+router.put(
+  ':/instanceId/return',
+  authController.authenticate,
+  instanceController.return
+);
+router.put(
+  ':/instanceId/accept_return',
+  authController.authenticate,
+  instanceController.accept_return
 );
 
 module.exports = router;
