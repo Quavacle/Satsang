@@ -1,6 +1,5 @@
 const User = require('../Models/userModel');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 const privateKey = process.env.SECRET;
 
 exports.register = function (req, res, next) {
@@ -15,9 +14,13 @@ exports.register = function (req, res, next) {
       if (err) {
         return res.status(500).json('Issue registering user' + err);
       }
-      const token = jwt.sign({ id: user._id }, privateKey, {
-        expiresIn: 86400,
-      });
+      const token = jwt.sign(
+        { id: user._id, username: user.username },
+        privateKey,
+        {
+          expiresIn: 86400,
+        }
+      );
       res.status(201).json({ auth: true, token: token });
     }
   );
@@ -87,7 +90,7 @@ exports.authenticate = function (req, res, next) {
   }
 };
 
-exports.user_check = function (req, res, next) {
+exports.attachUser = function (req, res, next) {
   let token = req.headers['x-access-token'] || req.headers['authorization'];
 
   if (token.startsWith('Bearer ')) {
@@ -100,11 +103,7 @@ exports.user_check = function (req, res, next) {
         return res.status(401).json('Token invalid');
       } else {
         req.decoded = decoded;
-        if (decoded.user._id === req.body.user._id) {
-          next();
-        } else {
-          res.status(401).json('Incorrect user');
-        }
+        next();
       }
     });
   }

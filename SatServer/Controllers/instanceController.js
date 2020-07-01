@@ -1,4 +1,6 @@
 const Instance = require('../Models/instanceModel');
+const authController = require('./authController');
+const jwt = require('jsonwebtoken');
 
 module.exports.create = function (req, res, next) {
   Instance.create(
@@ -18,11 +20,18 @@ module.exports.create = function (req, res, next) {
   );
 };
 
+module.exports.index = function (req, res, next) {
+  Instance.find({}, function (err, instanceList) {
+    if (err) {
+      res.status(500).json('Issue finding instances');
+    }
+    res.status(200).json(instanceList);
+  });
+};
 module.exports.request = function (req, res, next) {
-  console.log(`Request req.body.user: ${req.body.user}`);
   Instance.findByIdAndUpdate(
     { _id: req.params.instanceId },
-    { $push: { requested_by: req.body.user } },
+    { $push: { requested_by: req.decoded._id } },
     function (err, instance) {
       if (err) {
         return res.status(500).json('Error with book request');
@@ -33,18 +42,22 @@ module.exports.request = function (req, res, next) {
 };
 
 module.exports.accept_request = function (req, res, next) {
-  console.log(`Accept req.body.user: ${req.body.acceptedUser}`);
-  Instance.findByIdAndUpdate(
-    { _id: req.params.instanceId, user: req.body.acceptedUser },
+  console.log(req.decoded._id);
+  Instance.findOneAndUpdate(
+    { $and: [{ user: req.decoded._id }, { _id: req.params.instanceId }] },
     {
       $pull: { requested_by: req.body.acceptedUser },
       borrowed_by: req.body.acceptedUser,
       // return_by: req.body.return_by,
     },
     function (err, instance) {
+      if (instance == null) {
+        return res.status(401).json('Unauthorized user');
+      }
       if (err) {
         return res.status(500).json('Error with book request');
       }
+
       res.status(200).json(instance);
     }
   );
