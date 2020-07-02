@@ -1,8 +1,10 @@
 const User = require('../Models/userModel');
 const jwt = require('jsonwebtoken');
 const privateKey = process.env.SECRET;
+const { body, validationResult } = require('express-validator/check');
+const { sanitizeBody } = require('express-validator/filter');
 
-exports.register = function (req, res, next) {
+module.exports.register = function (req, res) {
   User.create(
     {
       username: req.body.username,
@@ -26,7 +28,7 @@ exports.register = function (req, res, next) {
   );
 };
 
-exports.login = function (req, res, next) {
+module.exports.login = function (req, res, next) {
   User.findOne(
     {
       $or: [{ email: req.body.email }, { username: req.body.username }],
@@ -69,7 +71,7 @@ exports.login = function (req, res, next) {
   );
 };
 
-exports.authenticate = function (req, res, next) {
+module.exports.authenticate = function (req, res, next) {
   let token = req.headers['x-access-token'] || req.headers['authorization'];
 
   if (token.startsWith('Bearer ')) {
@@ -87,24 +89,5 @@ exports.authenticate = function (req, res, next) {
     });
   } else {
     res.json('Token not provided');
-  }
-};
-
-exports.attachUser = function (req, res, next) {
-  let token = req.headers['x-access-token'] || req.headers['authorization'];
-
-  if (token.startsWith('Bearer ')) {
-    token = token.slice(7, token.length);
-  }
-
-  if (token) {
-    jwt.verify(token, privateKey, (err, decoded) => {
-      if (err) {
-        return res.status(401).json('Token invalid');
-      } else {
-        req.decoded = decoded;
-        next();
-      }
-    });
   }
 };

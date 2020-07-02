@@ -13,13 +13,15 @@ let expect = chai.expect;
 chai.use(chaiHttp);
 
 const user_one_login = {
+  username: 'testUser',
   email: 'test@email.com',
   password: '123@abc',
 };
 
 const user_one_register = {
+  username: 'testUser',
   email: 'test@email.com',
-  username: 'test',
+
   password: '123@abc',
 };
 
@@ -32,6 +34,7 @@ const kokomo = {
 
 const foibles = {
   _id: '5efa4e7bc85e352cb8492a50',
+  username: 'robbits',
   email: 'foibles@fribble.com',
   password: 'a1!A',
 };
@@ -43,7 +46,7 @@ const book_details = {
   published: '12/11/1921',
   description: 'Blah blah',
   genres: ['Hullabaloo', 'Pure garbage'],
-  cover: 'some url or some"in like that',
+  cover: 'some url or some"in like that <script>',
 };
 
 describe('Create, Login, Check Token', () => {

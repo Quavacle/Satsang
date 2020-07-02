@@ -1,33 +1,40 @@
 var express = require('express');
 var router = express.Router();
 var instanceController = require('../Controllers/instanceController');
-const authController = require('../Controllers/authController');
+const authService = require('../Services/authService');
+const validation = require('../Services/validation');
 
 router.get('/', instanceController.index);
-router.post('/create', authController.authenticate, instanceController.create);
+router.get('/:instanceId', instanceController.detail);
+router.post(
+  '/create',
+  authService.authenticate,
+  validation.instance,
+  instanceController.create
+);
 router.put(
   '/:instanceId/request',
-  authController.authenticate,
+  authService.authenticate,
   instanceController.request
 );
 router.put(
   '/:instanceId/accept',
-  authController.authenticate,
+  authService.authenticate,
   instanceController.accept_request
 );
 router.put(
   '/:instanceId/deny',
-  authController.authenticate,
+  authService.authenticate,
   instanceController.deny_request
 );
 router.put(
   ':/instanceId/return',
-  authController.authenticate,
+  authService.authenticate,
   instanceController.return
 );
 router.put(
   ':/instanceId/accept_return',
-  authController.authenticate,
+  authService.authenticate,
   instanceController.accept_return
 );
 

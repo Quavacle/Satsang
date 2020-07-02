@@ -1,4 +1,6 @@
 const Instance = require('../Models/instanceModel');
+const { body, validationResult } = require('express-validator/check');
+const { sanitizeBody } = require('express-validator/filter');
 
 // Create new instance of a book, with user being the currently logged in user
 module.exports.create = function (req, res, next) {
@@ -34,6 +36,16 @@ module.exports.index = function (req, res, next) {
     });
 };
 
+module.exports.detail = function (req, res, next) {
+  Instance.findById({ _id: req.params.instanceId })
+    .populate('book')
+    .exec(function (err, instance) {
+      if (err) {
+        res.status(500).json('Issue finding instance');
+      }
+      res.status(200).json(instance);
+    });
+};
 // Add current user to array of requesters for the book
 module.exports.request = function (req, res, next) {
   Instance.findByIdAndUpdate(
@@ -50,20 +62,59 @@ module.exports.request = function (req, res, next) {
 
 // General update for book instance. User can be changed here by passing updateUser
 // in the request
-module.exports.update = function (req, res, next) {
-  Instance.findByIdAndUpdate(
-    { $and: [{ user: req.decoded._id }, { _id: req.params.instanceId }] },
+module.exports.update = [
+  body('book').isLength(24).trim().isAlphanumeric(),
+  body('user').isLength(24).trim().isAlphanumeric(),
+  body('condition')
+    .trim()
+    .isAlphanumeric()
+    .withMessage('Letters and numbers only'),
+  body('notes').trim().isAlphanumeric().withMessage('Letters and numbers only'),
+  body('rating').isLength(1).trim().isNumeric(),
+
+  sanitizeBody('book').escape(),
+  sanitizeBody('user').escape(),
+  sanitizeBody('condition').escape(),
+  sanitizeBody('notes').escape(),
+  sanitizeBody('rating').escape(),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      res.status(300).json({ errors: errors.array() });
+    } else {
+      Instance.findByIdAndUpdate(
+        { $and: [{ user: req.decoded._id }, { _id: req.params.instanceId }] },
+        {
+          $set: req.body,
+        },
+        function (err, instance) {
+          if (err) {
+            res.status(500).json('Error updating book');
+          }
+          res.status(200).json(instance);
+        }
+      );
+    }
+  },
+];
+
+//Delete instance
+module.exports.delete = function (req, res) {
+  Instance.findByIdAndDelete(
     {
-      $set: req.body,
+      $and: [{ _id: req.params.instanceId }, { user: req.decoded._id }],
     },
     function (err, instance) {
       if (err) {
-        res.status(500).json('Error updating book');
+        res.status(500).json('Error deleting book');
       }
-      res.status(200).json(instance);
+      res.status(200).json('Book deleted' + instance);
     }
   );
 };
+
 // If owner of book, accept request to borrow the book, move user accepted
 // off of requested_by array and put them on to the borrowed_by field, set a return
 // date if user specifies one
