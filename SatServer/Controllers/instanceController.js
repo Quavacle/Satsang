@@ -50,9 +50,10 @@ module.exports.detail = function (req, res, next) {
 module.exports.request = function (req, res, next) {
   Instance.findByIdAndUpdate(
     { _id: req.params.instanceId },
-    { $push: { requested_by: req.decoded._id } },
+    { $addToSet: { requested_by: req.decoded._id } },
     function (err, instance) {
       if (err) {
+        console.log(err);
         return res.status(500).json('Error with book request');
       }
       res.status(200).json(instance);
