@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
-    "devstart": "SET DEBUG=satserver:* & npm run devstart",
+    "devstart": "SET DEBUG=satserver:* & npm run start",
     "test": "mocha --recursive"
   },
   "dependencies": {

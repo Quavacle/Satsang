@@ -30,6 +30,7 @@ const UserSchema = new Schema({
     required: [true, 'Password is required'],
   },
   name: { type: String, max: 200 },
+  picture: { type: String, max: 400, min: 8, trim: true },
 });
 
 UserSchema.pre('save', function (next) {

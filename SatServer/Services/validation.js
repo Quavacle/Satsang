@@ -1,4 +1,5 @@
 const { body, validationResult, oneOf } = require('express-validator');
+const URL = require('url').URL;
 
 module.exports.instance = [
   body('book').trim().escape(),
@@ -32,7 +33,18 @@ module.exports.instance = [
   },
 ];
 
-module.exports.register = [
+// Simple URL validation for profile pic, using Nodes built in url module. An
+// invalid URL should throw a type error when parsed
+const urlValidator = (url) => {
+  try {
+    new URL(url);
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
+module.exports.user = [
   body('username')
     .isLength({ min: 3, max: 50 })
     .trim()
@@ -50,6 +62,11 @@ module.exports.register = [
     .escape(),
 
   body('password').isLength({ min: 5, max: 200 }).trim(),
+  body('picture')
+    .isLength({ min: 6, max: 400 })
+    .trim()
+    .optional()
+    .custom((p) => (urlValidator(p) ? true : false)),
 
   (req, res, next) => {
     const errors = validationResult(req);

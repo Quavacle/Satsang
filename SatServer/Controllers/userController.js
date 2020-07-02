@@ -87,44 +87,18 @@ module.exports.profile = function (req, res) {
 };
 
 // Update user, password update handled in seperate function
-module.exports.update = [
-  body('username')
-    .isLength({ min: 3, max: 50 })
-    .trim()
-    .withMessage('Username required')
-    .isAlphanumeric()
-    .withMessage('Username must only contain letters and numbers'),
-
-  body('email').isEmail().normalizeEmail(),
-
-  body('name')
-    .isLength({ max: 200 })
-    .withMessage('Your name is very long, perhaps use a nickname?')
-    .trim()
-    .escape(),
-
-  sanitizeBody('username').escape(),
-  sanitizeBody('name').escape(),
-
-  (req, res) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      res.status(300).json({ errors: errors.array() });
-    } else {
-      User.findOneAndUpdate(
-        { user: req.decoded._id },
-        { $set: req.body },
-        function (err, user) {
-          if (err) {
-            res.status(500).json('Error updating user');
-          }
-          res.status(200).json(user);
-        }
-      );
+module.exports.update = function (req, res) {
+  User.findOneAndUpdate(
+    { user: req.decoded._id },
+    { $set: req.body },
+    function (err, user) {
+      if (err) {
+        res.status(500).json('Error updating user');
+      }
+      res.status(200).json(user);
     }
-  },
-];
+  );
+};
 
 // Delete user
 module.exports.delete = function (req, res) {
