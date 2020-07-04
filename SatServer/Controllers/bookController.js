@@ -4,47 +4,40 @@ const async = require('async');
 const { body, validationResult } = require('express-validator/check');
 const { sanitizeBody } = require('express-validator/filter');
 
-exports.create = [
-  (body('title').isLength({ min: 1, max: 400 }).trim().isAlphanumeric(),
-  body('subtitle').trim().escape(),
-  body('authors').trim().escape(),
-  body('published').toDate(),
-  body('description').trim().escape(),
-  body('genres').trim().escape(),
-  body('cover').trim().escape(),
-  sanitizeBody('title').escape(),
-  sanitizeBody('subtitle').escape(),
-  sanitizeBody('authors').escape(),
-  sanitizeBody('published').escape(),
-  sanitizeBody('description').escape(),
-  sanitizeBody('genres').escape(),
-  sanitizeBody('cover').escape(),
-  (req, res) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      res.status(300).json({ errors: errors.array() });
-    } else {
-      Book.create(
-        {
-          title: req.body.title,
-          subtitle: req.body.subtitle,
-          authors: req.body.authors,
-          published: req.body.published,
-          description: req.body.description,
-          genres: req.body.genres,
-          cover: req.body.cover,
-        },
-        function (err, book) {
-          if (err) {
-            return res.status(500).json('Issue creating book' + err);
+exports.create = function (req, res, next) {
+  Book.findOne({ $and: [{ title: req.body.title }, { authors: req.body.authors }] },
+    function (err, book) {
+      if (err) {
+        return res.status(500).json('Issue creating book' + err)
+      }
+      if (book) {
+        req.body.book = book
+        next()
+      } else if (!book) {
+        Book.create(
+          {
+            title: req.body.title,
+            subtitle: req.body.subtitle,
+            authors: req.body.authors,
+            published: req.body.published,
+            description: req.body.description,
+            genres: req.body.genres,
+            cover: req.body.cover,
+          },
+          function (err, book) {
+            if (err) {
+              return res.status(500).json('Issue creating book' + err);
+            }
+            req.body.book = book
+            next()
           }
-          res.status(201).json(book);
-        }
-      );
+        );
+      }
     }
-  }),
-];
+  )
+}
+
+
 
 exports.index = function (req, res) {
   Book.find({}, function (err, books) {

@@ -6,10 +6,12 @@ const { sanitizeBody } = require('express-validator/filter');
 
 // Main dashboard get, returning user info, books owned, borrowed, and requested
 module.exports.dashboard = function (req, res) {
+  console.log(req.body);
   async.parallel(
     {
       user: function (callback) {
-        User.findById({ _id: req.decoded._id }, { password: 0 }).exec(callback);
+        User.findById({ _id: req.decoded._id }, { password: 0 }).exec(
+          callback);
       },
 
       owned: function (callback) {
@@ -41,7 +43,9 @@ module.exports.dashboard = function (req, res) {
       if (err) {
         res.status(500).json('Error getting dashboard information');
       }
+      console.log('hit');
       res.status(200).json({ results });
+
     }
   );
 };
@@ -86,6 +90,16 @@ module.exports.profile = function (req, res) {
   );
 };
 
+module.exports.info = function (req, res) {
+  User.findById({ _id: req.params.userId }).exec(
+    function (err, user) {
+      if (err) {
+        res.status(500).json('Error retrieving user info')
+      }
+      res.status(200).json(user);
+    }
+  )
+}
 // Update user, password update handled in seperate function
 module.exports.update = function (req, res) {
   User.findOneAndUpdate(

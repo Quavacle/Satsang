@@ -72,6 +72,30 @@ describe('Create, Login, Check Token', () => {
         expect(res.body.auth).to.be.true;
         done();
       });
+    chai
+      .request(server)
+      .post('/register')
+      .send(kokomo)
+      .end((err, res) => {
+        if (err) {
+          return console.log(err);
+        }
+        res.should.have.status(201);
+        expect(res.body.auth).to.be.true;
+        done();
+      });
+    chai
+      .request(server)
+      .post('/register')
+      .send(foibles)
+      .end((err, res) => {
+        if (err) {
+          return console.log(err);
+        }
+        res.should.have.status(201);
+        expect(res.body.auth).to.be.true;
+        done();
+      });
 
     it('should log user in', (done) => {
       chai
@@ -106,15 +130,18 @@ describe('Create, Login, Check Token', () => {
 });
 
 describe('Log in user, create book, then create instance of that book', () => {
-  //   after((done) => {
-  //     Book.remove({}, (err) => {
-  //       console.log(err);
-  //     });
-  //     Instance.remove({}, (err) => {
-  //       console.log(err);
-  //     });
-  //     done();
+  // before((done) => {
+  //   Book.remove({}, (err) => {
+  //     console.log(err);
   //   });
+  //   Instance.remove({}, (err) => {
+  //     console.log(err);
+  //   });
+  //   User.remove({}, (err) => {
+  //     console.log(err)
+  //   })
+  //   done();
+  // });
 
   it('Login (User two) -> Create Book -> Create User', (done) => {
     chai

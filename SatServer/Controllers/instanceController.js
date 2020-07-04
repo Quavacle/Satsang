@@ -1,9 +1,11 @@
 const Instance = require('../Models/instanceModel');
+const Book = require('../Models/bookModel')
 const { body, validationResult } = require('express-validator/check');
 const { sanitizeBody } = require('express-validator/filter');
 
 // Create new instance of a book, with user being the currently logged in user
 module.exports.create = function (req, res, next) {
+
   Instance.create(
     {
       book: req.body.book,
@@ -39,6 +41,9 @@ module.exports.index = function (req, res, next) {
 module.exports.detail = function (req, res, next) {
   Instance.findById({ _id: req.params.instanceId })
     .populate('book')
+    .populate('user', { password: 0, _id: 0 })
+    .populate('requested_by', { password: 0, _id: 0 })
+    .populate('borrowed_by', { password: 0, _id: 0 })
     .exec(function (err, instance) {
       if (err) {
         res.status(500).json('Issue finding instance');

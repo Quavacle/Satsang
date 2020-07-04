@@ -80,20 +80,6 @@ module.exports.user = [
 ];
 
 module.exports.logIn = [
-  oneOf([
-    [
-      body('username')
-        .isLength({ min: 3, max: 50 })
-        .trim()
-        .withMessage('Username required')
-        .isAlphanumeric()
-        .withMessage('Username must only contain letters and numbers')
-        .escape(),
-    ],
-
-    body('email').isEmail().normalizeEmail(),
-  ]),
-
   body('password').isLength({ min: 4, max: 200 }).trim(),
 
   (req, res, next) => {

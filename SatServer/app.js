@@ -13,6 +13,7 @@ var usersRouter = require('./routes/userRoute');
 var bookRouter = require('./routes/bookRoute');
 var instanceRouter = require('./routes/instanceRoute');
 var app = express();
+app.use(cors());
 
 mongoose.connect(
   '  mongodb+srv://satsangTest:kIxgwdtAZyYClS7A@cluster0-mdil5.mongodb.net/satsang?retryWrites=true&w=majority'
@@ -26,7 +27,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

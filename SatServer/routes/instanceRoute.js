@@ -3,6 +3,7 @@ var router = express.Router();
 var instanceController = require('../Controllers/instanceController');
 const authService = require('../Services/authService');
 const validation = require('../Services/validation');
+const bookController = require('../Controllers/bookController');
 
 router.get('/', instanceController.index);
 router.get('/:instanceId', instanceController.detail);
@@ -10,6 +11,7 @@ router.post(
   '/create',
   authService.authenticate,
   validation.instance,
+  bookController.create,
   instanceController.create
 );
 router.put(
