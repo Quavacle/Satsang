@@ -30,7 +30,7 @@ class Dashboard extends React.Component {
       console.log(data.data)
       this.setState(
         {
-          user: data.data.results.user.email,
+          user: data.data.results.user.username,
           borrowed: data.data.results.borrowed,
           owned: data.data.results.owned,
           requested: data.data.results.requested

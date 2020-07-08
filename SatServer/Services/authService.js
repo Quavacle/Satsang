@@ -89,3 +89,4 @@ module.exports.authenticate = function (req, res, next) {
     res.status(401).json('Token not provided');
   }
 };
+

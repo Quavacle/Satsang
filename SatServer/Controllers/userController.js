@@ -6,48 +6,49 @@ const { sanitizeBody } = require('express-validator/filter');
 
 // Main dashboard get, returning user info, books owned, borrowed, and requested
 module.exports.dashboard = function (req, res) {
-  console.log(req.body);
-  async.parallel(
-    {
-      user: function (callback) {
-        User.findById({ _id: req.decoded._id }, { password: 0 }).exec(
-          callback);
-      },
+  if (req.decoded._id) {
+    async.parallel(
+      {
+        user: function (callback) {
+          User.findById({ _id: req.decoded._id }, { password: 0 }).exec(
+            callback);
+        },
 
-      owned: function (callback) {
-        Instance.find({
-          user: req.decoded._id,
-        })
-          .populate('book')
-          .populate('user', { password: 0 })
-          .exec(callback);
-      },
+        owned: function (callback) {
+          Instance.find({
+            user: req.decoded._id,
+          })
+            .populate('book')
+            .populate('user', { password: 0 })
+            .exec(callback);
+        },
 
-      borrowed: function (callback) {
-        Instance.find({
-          borrowed_by: req.decoded._id,
-        })
-          .populate('book')
-          .exec(callback);
-      },
+        borrowed: function (callback) {
+          Instance.find({
+            borrowed_by: req.decoded._id,
+          })
+            .populate('book')
+            .exec(callback);
+        },
 
-      requested: function (callback) {
-        Instance.find({
-          requested_by: req.decoded._id,
-        })
-          .populate('book')
-          .exec(callback);
+        requested: function (callback) {
+          Instance.find({
+            requested_by: req.decoded._id,
+          })
+            .populate('book')
+            .exec(callback);
+        },
       },
-    },
-    function (err, results) {
-      if (err) {
-        res.status(500).json('Error getting dashboard information');
+      function (err, results) {
+        if (err) {
+          res.status(500).json('Error getting dashboard information');
+        }
+        console.log('hit');
+        res.status(200).json({ results });
+
       }
-      console.log('hit');
-      res.status(200).json({ results });
-
-    }
-  );
+    );
+  }
 };
 
 // Public profile get
@@ -57,27 +58,25 @@ module.exports.profile = function (req, res) {
     [
       function (callback) {
         User.findOne({ username: req.params.username }, { password: 0 }).exec(
-          function (err, user) {
-            if (err) {
-              res.status(500).json('Error retrieving user profile');
-            }
-            console.log(user);
+          function (user) {
             callback(null, user);
           }
         );
       },
       // Get user's owned books
       function (user, callback) {
-        console.log(user._id);
-        Instance.find({
-          user: user._id,
-        }).exec(function (err, instance) {
-          if (err) {
-            res.status(500).json('Error retrieving users books');
-          }
-          callback(null, user, instance);
-        });
-      },
+        if (user) {
+
+          Instance.find({
+            user: user._id,
+          }).exec(function (instance) {
+
+            callback(null, user, instance);
+          });
+        } else {
+          return true
+        }
+      }
     ],
     function (err, results) {
       if (err) {
@@ -94,7 +93,7 @@ module.exports.info = function (req, res) {
   User.findById({ _id: req.params.userId }).exec(
     function (err, user) {
       if (err) {
-        res.status(500).json('Error retrieving user info')
+        return res.status(500).json('Error retrieving user info')
       }
       res.status(200).json(user);
     }

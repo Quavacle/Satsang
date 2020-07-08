@@ -30,8 +30,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-
 app.use('/books', bookRouter);
 app.use('/instances', instanceRouter);
+app.get('*', function (req, res) {
+  res.send('nope')
+})
 
 module.exports = app;

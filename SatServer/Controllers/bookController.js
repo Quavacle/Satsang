@@ -1,8 +1,6 @@
 const Book = require('../Models/bookModel');
 const Instance = require('../Models/instanceModel');
 const async = require('async');
-const { body, validationResult } = require('express-validator/check');
-const { sanitizeBody } = require('express-validator/filter');
 
 exports.create = function (req, res, next) {
   Book.findOne({ $and: [{ title: req.body.title }, { authors: req.body.authors }] },
@@ -23,6 +21,7 @@ exports.create = function (req, res, next) {
             description: req.body.description,
             genres: req.body.genres,
             cover: req.body.cover,
+
           },
           function (err, book) {
             if (err) {
@@ -37,14 +36,13 @@ exports.create = function (req, res, next) {
   )
 }
 
-
-
-exports.index = function (req, res) {
-  Book.find({}, function (err, books) {
+module.exports.index = function (req, res) {
+  console.log('HELLO BOOK INDEX HERE')
+  Instance.find({}).populate('user', { password: 0 }).populate('book').exec(function (err, books) {
     if (err) {
       return res.status(500).json('Issue getting books');
     }
-    res.status(200).json(books);
+    res.status(200).json(books)
   });
 };
 

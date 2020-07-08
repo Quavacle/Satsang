@@ -27,7 +27,6 @@ export default class Login extends Component {
     }).then((response) => {
       const token = response.data.token;
       localStorage.setItem('token', token);
-      this.props.validateToken();
       this.props.history.push('/dashboard');
     });
   }

@@ -7,7 +7,6 @@ class InstanceDetail extends React.Component {
   constructor(props) {
     super(props);
 
-
     this.state = {
       title: null,
       authors: null,
