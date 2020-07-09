@@ -1,8 +1,6 @@
 const User = require('../Models/userModel');
 const jwt = require('jsonwebtoken');
 const privateKey = process.env.SECRET;
-const { body, validationResult } = require('express-validator/check');
-const { sanitizeBody } = require('express-validator/filter');
 
 module.exports.register = function (req, res) {
   User.create(
@@ -70,9 +68,10 @@ module.exports.login = function (req, res) {
 
 module.exports.authenticate = function (req, res, next) {
   let token = req.headers['x-access-token'] || req.headers['authorization'];
-
-  if (token.startsWith('Bearer ')) {
-    token = token.slice(7, token.length);
+  if (token) {
+    if (token.startsWith('Bearer ')) {
+      token = token.slice(7, token.length);
+    }
   }
 
   if (token) {
@@ -82,7 +81,6 @@ module.exports.authenticate = function (req, res, next) {
       } else {
         req.decoded = decoded;
         return next();
-        // return res.json(decoded);
       }
     });
   } else {

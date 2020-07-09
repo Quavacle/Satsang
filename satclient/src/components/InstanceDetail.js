@@ -21,7 +21,8 @@ class InstanceDetail extends React.Component {
   }
 
   componentDidMount() {
-    const instanceId = this.props.match.params.instanceId;
+    console.log(this.props)
+    const instanceId = this.props.match.params.instanceId || this.props.match.params.redirectParam
     console.log(instanceId)
     Axios.get(`http://localhost:3000/instances/${instanceId}`).then((res) => {
       console.log(res)

@@ -37,8 +37,7 @@ exports.create = function (req, res, next) {
 }
 
 module.exports.index = function (req, res) {
-  console.log('HELLO BOOK INDEX HERE')
-  Instance.find({}).populate('user', { password: 0 }).populate('book').exec(function (err, books) {
+  Instance.find({ user: { $ne: req.decoded._id } }).populate('user', { password: 0 }).populate('book').exec(function (err, books) {
     if (err) {
       return res.status(500).json('Issue getting books');
     }

@@ -8,6 +8,6 @@ module.exports = router;
 // User routes
 router.post('/register', authService.register);
 router.post('/login', authService.login);
-router.get('/books/browse', bookController.index)
+router.get('/books/browse', authService.authenticate, bookController.index)
 router.get('/dashboard', authService.authenticate, userController.dashboard);
 router.get('/:username', userController.profile);

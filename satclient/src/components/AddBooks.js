@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import { Card, Form, Button, Row, Col, Image } from 'react-bootstrap';
-
 const APIkey = 'AIzaSyDLAPl6MAlcljl1s7SgzE7-PuYVY1UlA1w';
 
 export default class AddBooks extends Component {
@@ -43,8 +42,6 @@ export default class AddBooks extends Component {
   }
 
   addBook(props) {
-    console.log(`Add book props : ${props.title})`)
-
     const token = localStorage.getItem('token');
     console.log(token)
     axios.post('http://localhost:3000/instances/create', {

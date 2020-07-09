@@ -2,7 +2,6 @@ import React from 'react';
 import './App.css';
 import NavigationBar from './components/Navigation';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
-import { verifyToken } from './components/Services';
 import Home from './components/Home';
 import About from './components/About';
 import Login from './components/Login';
@@ -13,17 +12,23 @@ import InstanceDetail from './components/InstanceDetail'
 import BrowseBooks from './components/BrowseBooks'
 import BrowseUsers from './components/BrowseUsers'
 import Axios from 'axios'
+import { createStore } from 'redux'
+
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: null
+      user: null,
+      borrowed: null,
+      owned: null,
+      requested: null
     };
     this.logOut = this.logOut.bind(this);
   }
 
   componentDidMount() {
-    if (this.state.user !== null) {
+    console.log(this.props)
+    if (this.state.user === null) {
       const token = localStorage.getItem('token');
       if (token) {
         Axios.get('http://localhost:3000/dashboard', {
@@ -33,42 +38,44 @@ class App extends React.Component {
         }).then((data) => {
           this.setState(
             {
-              user: data.data.results.user
+              user: data.data.results.user.username,
+              borrowed: data.data.results.borrowed,
+              owned: data.data.results.owned,
+              requested: data.data.results.requested
             });
+          console.log(`App mount user: ${this.state.user}`)
         });
       }
     }
   }
 
   logOut() {
+    window.localStorage.removeItem('token')
     this.setState({ user: null, borrowed: null, owned: null, requested: null });
   }
 
   render() {
     return (
       <div>
-        <NavigationBar user={this.state.user} />
+        <NavigationBar user={this.state.user} logOut={this.logOut} />
         <BrowserRouter>
           <Switch>
-            <Route exact path="/" render={() => <Home />} />
+            <Route exact path="/" component={Home} />
             <Route
               path="/login"
-              render={(props) => (
-                <Login {...props} validateToken={this.validateToken} />
-              )}
+              component={Login}
             />
-            <Route path="/about" render={() => <About />} />
+            <Route path="/about" component={About} />
             <Route path="/register" render={() => <Register />} />
             <Route path="/AddBooks" render={() => <AddBooks />} />
             <Route path="/browse" render={() => <BrowseBooks />} />
             <Route path="/users" render={() => <BrowseUsers />} />
-            <Route path="/instances/:instanceId" render={() => <InstanceDetail />} />
+            <Route path="/instances/:instanceId" render={(props) => <InstanceDetail {...props} />} />
             <Route
 
               path="/dashboard/"
-              render={(props) => (
+              render={() => (
                 <Dashboard
-                  {...props}
                   user={this.state.user}
                   owned={this.state.owned}
                   borrowed={this.state.borrowed}

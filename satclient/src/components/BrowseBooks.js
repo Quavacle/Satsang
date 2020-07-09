@@ -1,19 +1,27 @@
 import React from 'react'
-import { Card, Col, Row, Container, Image, Button, Table } from 'react-bootstrap'
+import { Card, Col, Row, Container, Image, Button, Table, Modal } from 'react-bootstrap'
 import Axios from 'axios'
-
+import RequestModal from './RequestModal'
 class BookContainer extends React.Component {
+
   constructor(props) {
     super(props);
     this.state = {
       results: [],
+      showModal: false,
     }
     this.bookConcat = this.bookConcat.bind(this);
+    this.toggleModal = this.toggleModal.bind(this);
   }
 
+
   componentDidMount() {
+    const token = localStorage.getItem('token')
     if (this.state.results.length === 0) {
-      Axios.get('http://localhost:3000/books/browse').then((data) => {
+      const headers = {
+        "authorization": token
+      }
+      Axios.get('http://localhost:3000/books/browse', { headers }).then((data) => {
         this.setState({
           results: this.bookConcat(data.data),
         })
@@ -24,19 +32,24 @@ class BookContainer extends React.Component {
     }
   }
 
+  toggleModal() {
+    this.setState({ showModal: !this.state.showModal })
+  }
+
   bookConcat(props) {
     // Function to take in book and owner information, reduce it to one object per title and attach all users/instances to that object
     const formatted = props.reduce((acc, curr) => {
+
       const found = acc.some(el => el.title === curr.book.title)
       if (!found) {
         // Title does not exist, create entry in our accumulator
-        const entry = Object.assign({ id: curr._id, title: curr.book.title, book: curr.book, user: [curr.user] })
+        const entry = Object.assign({ title: curr.book.title, book: curr.book, owner: [{ user: curr.user, instance: curr }] })
         acc.push(entry)
       } else {
         for (const i in acc) {
           // Book exists and does not need to be created, iterate and match titles, then add users to array of owners
           if (acc[i].title === curr.book.title) {
-            acc[i].user.push(curr.user)
+            acc[i].owner.push({ user: curr.user, instance: curr })
           }
         }
       }
@@ -45,43 +58,43 @@ class BookContainer extends React.Component {
     return formatted
   }
 
+
   renderResults(props) {
     let available = 'None Available'
-    console.log(props.user[0].username)
     if (props.borrowed_by === undefined) {
-      available = `${props.user.length} copies available`
+      available = `${props.owner.length} copies available`
     }
     return (
-      <tr>
-        <td><Image src={props.book.cover} /></td>
-        <td>{props.book.title}</td>
-        <td>{props.book.authors.map((auth) => <li>{auth}</li>)}</td>
-        <td>{available}</td>
-        <td>{props.user.username}</td>
-      </tr>
+      <Col>
+        <Card variant="dark" text="light" bg="dark">
+          <Card.Title>{props.book.title}</Card.Title>
+          <Card.Subtitle>{available}
+            {props.book.authors.map((auth) => <li>{auth}</li>)}
+          </Card.Subtitle>
+          <Image src={props.book.cover} rounded />
+          <Card.Body>
+            {props.book.description}
+            <RequestModal props={props} />
+          </Card.Body>
+        </Card>
+      </Col>
 
     )
   }
 
-  render() {
+  render(props) {
+
     return (
       <div>
-        <h1>Browse All Books</h1>
-        <Table striped bordered hover variant="dark" >
-          <thead>
-            <tr>
-              <th>Cover</th>
-              <th>Title </th>
-              <th>Authors</th>
-              <th>Available?</th>
-              <th>Owners</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Container bg="dark ">
 
+          <h1>Browse All Books</h1>
+
+
+          <Row>
             {(this.state.results.length > 0) ? this.state.results.map((key) => this.renderResults(key)) : null}
-          </tbody>
-        </Table>
+          </Row>
+        </Container>
       </div>
     )
   }

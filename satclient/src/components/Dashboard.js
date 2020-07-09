@@ -18,10 +18,6 @@ class Dashboard extends React.Component {
 
   componentDidMount() {
     const token = localStorage.getItem('token');
-    const decoded = jwt(token)
-    console.table(decoded)
-
-
     Axios.get('http://localhost:3000/dashboard', {
       headers: {
         authorization: token,
