@@ -2,6 +2,7 @@ import React from 'react'
 import { Card, Col, Row, Container, Image, Button, Table, Modal } from 'react-bootstrap'
 import Axios from 'axios'
 import RequestModal from './RequestModal'
+
 class BookContainer extends React.Component {
 
   constructor(props) {
@@ -9,6 +10,7 @@ class BookContainer extends React.Component {
     this.state = {
       results: [],
       showModal: false,
+      showAlert: false,
     }
     this.bookConcat = this.bookConcat.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
@@ -36,6 +38,10 @@ class BookContainer extends React.Component {
     this.setState({ showModal: !this.state.showModal })
   }
 
+  showAlert = () => {
+    this.setState({ showAlert: true })
+  }
+
   bookConcat(props) {
     // Function to take in book and owner information, reduce it to one object per title and attach all users/instances to that object
     const formatted = props.reduce((acc, curr) => {
@@ -58,13 +64,13 @@ class BookContainer extends React.Component {
     return formatted
   }
 
-
   renderResults(props) {
     let available = 'None Available'
     if (props.borrowed_by === undefined) {
       available = `${props.owner.length} copies available`
     }
     return (
+
       <Col>
         <Card variant="dark" text="light" bg="dark">
           <Card.Title>{props.book.title}</Card.Title>
@@ -74,23 +80,18 @@ class BookContainer extends React.Component {
           <Image src={props.book.cover} rounded />
           <Card.Body>
             {props.book.description}
-            <RequestModal props={props} />
+            <RequestModal {...props} />
           </Card.Body>
         </Card>
       </Col>
-
     )
   }
 
   render(props) {
-
     return (
       <div>
         <Container bg="dark ">
-
           <h1>Browse All Books</h1>
-
-
           <Row>
             {(this.state.results.length > 0) ? this.state.results.map((key) => this.renderResults(key)) : null}
           </Row>

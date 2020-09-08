@@ -40,7 +40,6 @@ UserSchema.pre('save', function (next) {
   } else {
     bcrypt.hash(user.password, 10, function (err, hash) {
       if (err) {
-        console.log('Hashing error for:', user.username);
         next(err);
       } else {
         user.password = hash;

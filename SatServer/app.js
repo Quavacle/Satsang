@@ -9,10 +9,11 @@ require('dotenv').config();
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/userRoute');
-
 var bookRouter = require('./routes/bookRoute');
 var instanceRouter = require('./routes/instanceRoute');
+
 var app = express();
+
 app.use(cors());
 
 mongoose.connect(

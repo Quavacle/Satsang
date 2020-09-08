@@ -14,6 +14,8 @@ import BrowseUsers from './components/BrowseUsers'
 import Axios from 'axios'
 import { createStore } from 'redux'
 
+
+import './main.css'
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -21,14 +23,21 @@ class App extends React.Component {
       user: null,
       borrowed: null,
       owned: null,
-      requested: null
+      requested: null,
+      showAlert: true,
     };
     this.logOut = this.logOut.bind(this);
   }
 
+  handleAlert = () => {
+    this.setState((prevState, props) => {
+      return { showAlert: !prevState.showAlert }
+    })
+  };
+
   componentDidMount() {
-    console.log(this.props)
     if (this.state.user === null) {
+      console.log('App mounted, User Null, GET to server')
       const token = localStorage.getItem('token');
       if (token) {
         Axios.get('http://localhost:3000/dashboard', {

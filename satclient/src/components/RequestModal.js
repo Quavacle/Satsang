@@ -22,10 +22,10 @@ function RequestModal(props) {
         centered
       >
         <Modal.Header closeButton>
-          <Modal.Title>Requesting '{props.props.title}'</Modal.Title>
+          <Modal.Title>Requesting '{props.title}'</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <RequestForm props={props} />
+          <RequestForm {...props} />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>

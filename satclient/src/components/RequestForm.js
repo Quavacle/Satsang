@@ -2,6 +2,7 @@ import React from 'react';
 import Axios from 'axios'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
+import Alert from 'react-bootstrap/Alert'
 
 export default class RequestForm extends React.Component {
   constructor(props) {
@@ -10,17 +11,10 @@ export default class RequestForm extends React.Component {
       instance: null,
       users: [],
       message: null,
-      token: null,
+      show: false,
     }
     this.handleChange = this.handleChange.bind(this);
     this.request = this.request.bind(this);
-  }
-
-  componentDidMount() {
-    const token = window.localStorage.getItem('token')
-    this.setState({
-      token: token
-    })
   }
 
   handleChange(e) {
@@ -30,11 +24,8 @@ export default class RequestForm extends React.Component {
     console.log(value)
     this.setState({
       [name]: value,
+      message: null,
     });
-  }
-
-  handleList(e) {
-    alert(e.target.value)
   }
 
   listUsers(props) {
@@ -46,15 +37,18 @@ export default class RequestForm extends React.Component {
     const headers = {
       "authorization": token
     }
-    console.log(this.state.token)
     Axios.put('http://localhost:3000/instances/' + this.state.instance + '/request', {},
       { headers }
-    ).then((res) => { alert('Book requested!') })
+    ).then((res) => {
+      console.log(res)
+      return (
+        this.setState({ show: true })
+      )
+    })
   }
 
-  render() {
-    console.log(`FORM PROPS`)
-    console.log(this.props.props.props)
+
+  render(props) {
     return (
       <div className="form-container">
         <Form>
@@ -66,7 +60,7 @@ export default class RequestForm extends React.Component {
               value={this.state.value}
               onChange={this.handleChange}>
               <option>Please select User</option>
-              {this.props.props.props.owner.map((u) => this.listUsers(u))}
+              {this.props.owner.map((u) => this.listUsers(u))}
             </Form.Control>
           </Form.Group>
           <Form.Group controlId="message">

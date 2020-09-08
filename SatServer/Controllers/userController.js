@@ -1,54 +1,53 @@
-const User = require('../Models/userModel');
-const Instance = require('../Models/instanceModel');
-const async = require('async');
-const { body, validationResult } = require('express-validator/check');
-const { sanitizeBody } = require('express-validator/filter');
+const User = require('../Models/userModel')
+const Instance = require('../Models/instanceModel')
+const async = require('async')
 
 // Main dashboard get, returning user info, books owned, borrowed, and requested
 module.exports.dashboard = function (req, res) {
-  if (req.decoded._id) {
+  if (req.decoded.id) {
     async.parallel(
       {
         user: function (callback) {
-          User.findById({ _id: req.decoded._id }, { password: 0 }).exec(
-            callback);
+          User.findById({ _id: req.decoded.id }, { password: 0 }).exec(
+            callback)
         },
 
         owned: function (callback) {
           Instance.find({
-            user: req.decoded._id,
+            user: req.decoded.id
           })
             .populate('book')
             .populate('user', { password: 0 })
-            .exec(callback);
+            .exec(callback)
         },
 
         borrowed: function (callback) {
           Instance.find({
-            borrowed_by: req.decoded._id,
+            borrowed_by: req.decoded.id
           })
             .populate('book')
-            .exec(callback);
+            .exec(callback)
         },
 
         requested: function (callback) {
           Instance.find({
-            requested_by: req.decoded._id,
+            requested_by: req.decoded.id
           })
             .populate('book')
-            .exec(callback);
-        },
+            .exec(callback)
+        }
       },
       function (err, results) {
         if (err) {
-          res.status(500).json('Error getting dashboard information');
+          res.status(500).json('Error getting dashboard information')
         }
-        res.status(200).json({ results });
-
+        res.status(200).json({ results })
       }
-    );
+    )
+  } else {
+    res.status(401).json('No token')
   }
-};
+}
 
 // Public profile get
 module.exports.profile = function (req, res) {
@@ -58,20 +57,18 @@ module.exports.profile = function (req, res) {
       function (callback) {
         User.findOne({ username: req.params.username }, { password: 0 }).exec(
           function (user) {
-            callback(null, user);
+            callback(null, user)
           }
-        );
+        )
       },
       // Get user's owned books
       function (user, callback) {
         if (user) {
-
           Instance.find({
-            user: user._id,
+            user: user._id
           }).exec(function (instance) {
-
-            callback(null, user, instance);
-          });
+            callback(null, user, instance)
+          })
         } else {
           return true
         }
@@ -81,12 +78,12 @@ module.exports.profile = function (req, res) {
       if (err) {
         res
           .status(500)
-          .json('Error finding profile for ' + req.params.username);
+          .json('Error finding profile for ' + req.params.username)
       }
-      res.status(200).json(results);
+      res.status(200).json(results)
     }
-  );
-};
+  )
+}
 
 module.exports.info = function (req, res) {
   User.findById({ _id: req.params.userId }).exec(
@@ -94,32 +91,32 @@ module.exports.info = function (req, res) {
       if (err) {
         return res.status(500).json('Error retrieving user info')
       }
-      res.status(200).json(user);
+      res.status(200).json(user)
     }
   )
 }
 // Update user, password update handled in seperate function
 module.exports.update = function (req, res) {
   User.findOneAndUpdate(
-    { user: req.decoded._id },
+    { user: req.decoded.id },
     { $set: req.body },
     function (err, user) {
       if (err) {
-        res.status(500).json('Error updating user');
+        res.status(500).json('Error updating user')
       }
-      res.status(200).json(user);
+      res.status(200).json(user)
     }
-  );
-};
+  )
+}
 
 // Delete user
 module.exports.delete = function (req, res) {
-  User.findByIdAndDelete({ _id: req.decoded._id }, function (err, user) {
+  User.findByIdAndDelete({ _id: req.decoded.id }, function (err, user) {
     if (err) {
-      res.status(500).json('Error deleting account');
+      res.status(500).json('Error deleting account')
     }
     if (!user.comparePassword(req.body.password)) {
-      res.status(401).json('Password incorrect');
+      res.status(401).json('Password incorrect')
     }
-  });
-};
+  })
+}
