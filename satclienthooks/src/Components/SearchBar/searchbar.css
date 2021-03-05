@@ -1,0 +1,15 @@
+.search-bar {
+  width: 100%;
+  display: flex;
+}
+
+.search-bar > input {
+  font-size: 1rem;
+  margin-left: 10%;
+  flex: 5 0;
+}
+
+.search-bar > button {
+  margin-right: 10%;
+  flex: 1 1;
+}

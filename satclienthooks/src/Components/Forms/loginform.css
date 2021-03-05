@@ -1,0 +1,56 @@
+.login {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-top: none;
+  border-left: solid 4px rgba(0, 0, 0, 0.582);
+  border-bottom: solid 6px rgba(0, 0, 0, 0.582);
+  border-right: solid 6px rgba(0, 0, 0, 0.582);
+  height: auto;
+  background-color: white;
+}
+
+.login > .input-group {
+  display: flex;
+  flex-direction: column;
+  width: auto;
+  flex: 1 1 auto;
+  min-width: 50vw;
+}
+
+.login > .input-group:nth-child(even) {
+  justify-content: flex-start;
+}
+
+.login > .input-group:first-child {
+  margin-top: 4%;
+  justify-content: flex-end;
+}
+
+.login > .button-group {
+  background-color: white;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  align-items: center;
+  flex:1;
+}
+
+.login > .button-group > button {
+  flex: 2;
+  height: 50px;
+}
+
+.login-modal > .input-group > * {
+  width: 50vw;
+}
+
+.login > * > label {
+  display: inline-block;
+  width: 25%;
+  border-bottom: 2px solid black;
+  line-height: 0.28;
+  padding-bottom: 1px;
+  margin-bottom: 5px;
+}

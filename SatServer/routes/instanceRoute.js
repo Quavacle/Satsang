@@ -5,8 +5,6 @@ const authService = require('../Services/authService');
 const validation = require('../Services/validation');
 const bookController = require('../Controllers/bookController');
 
-router.get('/', instanceController.index);
-router.get('/:instanceId', instanceController.detail);
 router.post(
   '/create',
   authService.authenticate,
@@ -14,6 +12,34 @@ router.post(
   bookController.create,
   instanceController.create
 );
+router.put('/:instanceId/update',
+  authService.authenticate,
+  instanceController.update
+)
+router.delete('/:instanceId/delete',
+  authService.authenticate,
+  instanceController.delete
+)
+
+// Public index
+router.get('/index',
+  instanceController.index)
+
+// Owner index
+router.get('/owned',
+  authService.authenticate,
+  instanceController.ownerIndex)
+
+// Owner Detail
+router.get('/:instanceId/detail',
+  authService.authenticate,
+  instanceController.ownerDetail
+)
+// Public detail
+router.get('/:instanceId',
+  instanceController.publicDetail
+)
+
 router.put(
   '/:instanceId/request',
   authService.authenticate,
@@ -22,22 +48,22 @@ router.put(
 router.put(
   '/:instanceId/accept',
   authService.authenticate,
-  instanceController.accept_request
+  instanceController.acceptRequest
 );
 router.put(
   '/:instanceId/deny',
   authService.authenticate,
-  instanceController.deny_request
+  instanceController.denyRequest
 );
 router.put(
-  ':/instanceId/return',
+  '/:instanceId/return',
   authService.authenticate,
   instanceController.return
 );
 router.put(
-  ':/instanceId/accept_return',
+  '/:instanceId/accept_return',
   authService.authenticate,
-  instanceController.accept_return
+  instanceController.acceptReturn
 );
 
 module.exports = router;

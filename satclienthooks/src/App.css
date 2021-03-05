@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Poppins&display=swap');
+
+
+body {
+  font-family: 'Open Sans', sans-serif;
+
+  font-family: 'Poppins', sans-serif;
+  background: rgb(2,46,64);
+background: linear-gradient(90deg, rgba(2,46,64,1) 0%, rgba(34,115,115,1) 40%, rgba(217,205,184,1) 81%, rgba(242,122,94,1) 93%); 
+}
+
+.book-list-header > h2 {
+  padding-left: 15px;
+}
+
+a {
+  color: #D9CDB8;
+}
+
+.detail-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.dashboard {
+  text-align: center;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+box-sizing: inherit;
+}
+

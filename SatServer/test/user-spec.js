@@ -5,10 +5,15 @@ const Book = require('../Models/bookModel')
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 const server = require('../app')
-const should = chai.should()
 const expect = chai.expect
-
 chai.use(chaiHttp)
+
+
+let tokenOne = null;
+let tokenTwo = null;
+let idOne = null;
+let idTwo = null;
+let instance = null;
 
 const userOne = {
   username: 'testUser',
@@ -38,14 +43,21 @@ const bookDetails = {
   cover: 'some url or some"in like that <script>'
 }
 
-let tokenOne = null;
-let tokenTwo = null;
-let idOne = null;
-let idTwo = null;
-let instance = null;
-
 // User Creation/Log In
 describe('Create, Login, Check Token', () => {
+  before((done) => {
+    User.remove({
+      $or: [{ email: userOne.email }, { email: userTwo.email }, { email: userThree.email }]
+    }, (err, res) => {
+      if (err) { return err }
+      return res
+    })
+    Book.findOneAndDelete({ _id: -1 }, (err, res) => {
+      if (err) { return err }
+      return res
+    })
+    done()
+  })
   after((done) => {
     User.remove({
       $or: [{ email: userOne.email }, { email: userTwo.email }, { email: userThree.email }]
@@ -59,15 +71,6 @@ describe('Create, Login, Check Token', () => {
     })
     done()
   })
-  // after((done) => {
-  //   User.remove({
-  //     $or: [{ email: userOne.email }, { email: userTwo.email }, { email: userThree.email }]
-  //   }, (err, res) => {
-  //     if (err) { return err }
-  //     return res
-  //   })
-  //   done()
-  // })
 
   it('Should register userOne', (done) => {
     chai
@@ -134,7 +137,7 @@ describe('Create, Login, Check Token', () => {
   })
 
   // Book Creation
-  it('Uses userOne to create book', (done) => {
+  it('userOne creates book', (done) => {
     chai
       .request(server)
       .post('/instances/create')
@@ -161,16 +164,14 @@ describe('Create, Login, Check Token', () => {
         if (err) {
           return err
         }
+        // userTwo should be in the requested_by array
+        expect(res.body.requested_by[0]).to.equal(idTwo)
         res.should.have.status(200)
         done()
       })
   })
 
   it('userOne accepts request from userTwo', (done) => {
-    console.log('--------------INSIDE TEST REQUEST: ID ONE------------------')
-    console.log(idOne)
-    console.log('--------------INSIDE TEST REQUEST: INSTANCE ID------------------')
-    console.log(instance)
     chai
       .request(server)
       .put('/instances/' + instance + '/accept')
@@ -182,68 +183,161 @@ describe('Create, Login, Check Token', () => {
         if (err) {
           return err
         }
+        // Requested by array should be empty
+        expect(res.body.requested_by.length).to.equal(0)
+        // Borrowed by should be userTwo
+        expect(res.body.borrowed_by).to.equal(idTwo)
+        res.should.have.status(200)
+        done()
+      })
+  })
+
+  it('userTwo begins return to userOne', (done) => {
+    chai
+      .request(server)
+      .put('/instances/' + instance + '/return')
+      .set('authorization', tokenTwo)
+      .end((err, res) => {
+        if (err) {
+          return err
+        }
+        // Pending return boolean indicates userTwo has returned the book
+        expect(res.body.pending_return).to.equal(true)
+        res.should.have.status(200)
+        done()
+      })
+  })
+
+  it('userOne accepts return from userTwo', (done) => {
+    chai
+      .request(server)
+      .put('/instances/' + instance + '/accept_return')
+      .set('authorization', tokenOne)
+      .end((err, res) => {
+        if (err) {
+          return err
+        }
+        // Should no longer be pending return
+        expect(res.body.pending_return).to.equal(false)
+        // Borrowed by field should be empty
+        expect(res.body.borrowed_by).to.equal(null)
+        res.should.have.status(200)
+        done()
+      })
+  })
+
+  it('userOne updates and transfers ownership to userTwo', (done) => {
+    chai
+      .request(server)
+      .put('/instances/' + instance + '/update')
+      .set('authorization', tokenOne)
+      .send({
+        condition: 'UPDATED BOOK',
+        notes: 'A wondrous read, BEAUTY INCARNATE',
+        user: [idTwo]
+      })
+      .end((err, res) => {
+        if (err) {
+          return err
+        }
+        res.should.have.status(200)
+        expect(res.body.user).to.equal(idTwo)
+        expect(res.body.condition).to.equal('UPDATED BOOK')
+        done()
+      })
+  })
+
+  it('userOne attempts to update userTwos book and fails', (done) => {
+    chai
+      .request(server)
+      .put('/instances/' + instance + '/update')
+      .set('authorization', tokenOne)
+      .send({
+        condition: 'MY BOOK NOW',
+        user: [idOne]
+      })
+      .end((err, res) => {
+        if (err) {
+          return err
+        }
+        res.should.have.status(401)
+        done()
+      })
+  })
+
+  it('should show detail page of book', (done) => {
+    console.log(instance)
+    chai
+      .request(server)
+      .get('/instances/' + instance)
+      .set('authorization', tokenTwo)
+      .end((err, res) => {
+        if (err) {
+          return err
+        }
         console.log(res.body)
-        console.log(idTwo)
+        res.should.have.status(200)
+        done()
+      })
+  })
+
+  it('get book index page', function (done) {
+    chai
+      .request(server)
+      .get('/books/index')
+      .end((err, res) => {
+        if (err) { return err }
+        console.log(res.body)
+        res.should.have.status(200)
+        done()
+      })
+  })
+
+  // PUBLIC instances
+  it('get ALL instances', function (done) {
+    chai
+      .request(server)
+      .get('/instances/index')
+      .end((err, res) => {
+        if (err) { return err }
+        res.should.have.status(200)
+        done()
+      })
+  })
+
+  it('get instance PUBLIC detail page', (done) => {
+    chai
+      .request(server)
+      .get('/instances/' + instance)
+      .end((err, res) => {
+        if (err) return err
+        res.should.have.status(200)
+        done()
+      })
+  })
+  // OWNER instances
+  it('get all OWNED instances', function (done) {
+    chai
+      .request(server)
+      .get('/instances/owned')
+      .set('authorization', tokenTwo)
+      .end((err, res) => {
+        if (err) { return err }
+        res.should.have.status(200)
+        expect(res.body.length).to.equal(1)
+        expect(res.body[0].user._id).to.equal(idTwo)
+        done()
+      })
+  })
+  it('get instance OWNER detail page', (done) => {
+    chai
+      .request(server)
+      .get('/instances/' + instance + '/detail')
+      .set('authorization', tokenTwo)
+      .end((err, res) => {
+        if (err) return err
         res.should.have.status(200)
         done()
       })
   })
 })
-
-// describe('Login non-owner -> Attempt to accept -> Fail', () => {
-//   it('Fail to accept request (invalid user)', (done) => {
-//     chai
-//       .request(server)
-//       .post('/login')
-//       .send(userThree)
-//       .end((err, res) => {
-//         if (err) {
-//           console.log(err);
-//         }
-//         res.should.have.status(200);
-//         const token = res.body.token;
-//         chai
-//           .request(server)
-//           .put('/instances/' + instance + '/accept')
-//           .set('authorization', token)
-//           .send({ acceptedUser: userTwo._id })
-//           .end((err, res) => {
-//             if (err) {
-//               console.log(err);
-//             }
-//             res.should.have.status(401);
-//             done();
-//           });
-//       });
-//   });
-// });
-
-// describe('Login (user 3) -> Accept request to borrow book', () => {
-//   it('Accept request', (done) => {
-//     chai
-//       .request(server)
-//       .post('/login')
-//       .send(userTwo)
-//       .end((err, res) => {
-//         if (err) {
-//           console.log(err);
-//         }
-//         res.should.have.status(200);
-//         const token = res.body.token;
-//         chai
-//           .request(server)
-//           .put('/instances/' + instance + '/accept')
-//           .set('authorization', token)
-//           .send({ acceptedUser: userThree._id })
-//           .end((err, res) => {
-//             if (err) {
-//               console.log(err);
-//             }
-//             res.should.have.status(200);
-//             done();
-//           });
-//       });
-//   });
-// });
-
-
